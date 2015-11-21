@@ -1,13 +1,15 @@
-package thenextapp.apistructure.network;
+package thenextapp.apistructure.network.callback;
 
 import java.util.concurrent.Executor;
 
-abstract class CallbackRunnable<T> implements Runnable {
+import thenextapp.apistructure.network.ResponseWrapper;
+
+public abstract class CallbackRunnable<T> implements Runnable {
 
     private final Callback<T> callback;
     private final Executor callbackExecutor;
 
-    CallbackRunnable(Callback<T> callback, Executor callbackExecutor) {
+    public CallbackRunnable(Callback<T> callback, Executor callbackExecutor) {
         this.callback = callback;
         this.callbackExecutor = callbackExecutor;
     }

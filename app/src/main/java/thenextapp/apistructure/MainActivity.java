@@ -8,12 +8,14 @@ import android.widget.TextView;
 import com.squareup.okhttp.Response;
 import com.squareup.picasso.Picasso;
 
-import thenextapp.apistructure.network.Callback;
+import java.util.HashMap;
+import java.util.Map;
+
+import thenextapp.apistructure.network.callback.Callback;
 import thenextapp.apistructure.network.RestAdapter;
+import thenextapp.apistructure.network.request.GET;
 
 public class MainActivity extends AppCompatActivity {
-
-    private String ROOT = "https://api.github.com/users/google";
 
     private ImageView ivAvatar;
     private TextView tvName;
@@ -26,16 +28,29 @@ public class MainActivity extends AppCompatActivity {
         ivAvatar = (ImageView) findViewById(R.id.avatar);
         tvName = (TextView) findViewById(R.id.name);
 
-        RestAdapter restAdapter = new RestAdapter();
-        restAdapter
-                .setHeader()
-                .setRootUrl(ROOT)
-                .build();
+
+        ////////////////////////////////////////////////
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("users", "google");
+
+        GET get = new GET();
+        get.setSepareType(GET.SEPARE.SLASH);
+        get.setParams(map);
+        ////////////////////////////////////////////////
+
+
+        ////////////////////////////////////////////////
+        RestAdapter restAdapter = RestAdapter.getInstance();
+        restAdapter.setApiUrl(get.getApiUrl());
+        ////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////
+        restAdapter.setRequestBuilder(get.buildRequest());
+        ////////////////////////////////////////////////
 
         ApiGit service = restAdapter.create(ApiGit.class);
 
         service.getUserInfo(new Callback<User>() {
-
             @Override
             public void success(User user, Response response) {
                 User u =  user;

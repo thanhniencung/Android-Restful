@@ -1,4 +1,4 @@
-package thenextapp.apistructure.network;
+package thenextapp.apistructure.network.callback;
 
 import com.squareup.okhttp.*;
 

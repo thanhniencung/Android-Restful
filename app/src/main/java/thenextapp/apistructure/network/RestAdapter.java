@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import com.squareup.okhttp.*;
 
 import java.lang.reflect.InvocationHandler;
@@ -12,40 +13,43 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import thenextapp.apistructure.network.callback.*;
+import thenextapp.apistructure.network.callback.Callback;
 
 public class RestAdapter {
 
     private  Executor httpExecutor = null;
     private  Executor callbackExecutor = null;
 
-    private String rootUrl = "";
+    private String apiUrl = "";
     private Type type;
     private Object reponseObject;
+    private Request.Builder requestBuilder;
+
     private static OkHttpClient okHttpClient = null;
+    private static RestAdapter restAdapter = null;
 
-    public RestAdapter setRootUrl(String url) {
-        this.rootUrl = url;
-        return this;
+    public static RestAdapter getInstance() {
+        if (restAdapter == null) {
+            restAdapter = new RestAdapter();
+        }
+        return restAdapter;
     }
 
-    private String getRootUrl() {
-        return this.rootUrl;
-    }
-
-    public void build() {
+    public RestAdapter() {
         initExecutor();
     }
 
-    public RestAdapter setMethod() {
-        // POST - PUT - GET - DELETE
-        return this;
+    public void setApiUrl(String apiUrl) {
+        this.apiUrl = apiUrl;
     }
 
-    public RestAdapter setHeader() {
-        // setup header for request
-        return this;
+    private String getApiUrl() {
+        return this.apiUrl;
     }
 
     private void initExecutor() {
@@ -78,12 +82,14 @@ public class RestAdapter {
 
             type = method.getGenericReturnType();
 
-            thenextapp.apistructure.network.Callback<?> callback = (thenextapp.apistructure.network.Callback<?>) objects[objects.length - 1];
+            method.getParameterAnnotations();
+
+            Callback<?> callback = (Callback<?>) objects[objects.length - 1];
 
             httpExecutor.execute(new CallbackRunnable(callback, callbackExecutor) {
                 @Override
                 public ResponseWrapper obtainResponse() {
-                    return (ResponseWrapper) invokeRequest(getRootUrl());
+                    return (ResponseWrapper) invokeRequest(getApiUrl());
                 }
             });
 
@@ -98,16 +104,17 @@ public class RestAdapter {
         }
     }
 
+    public void setRequestBuilder(Request.Builder requestBuilder) {
+        this.requestBuilder = requestBuilder;
+    }
+
     public Object invokeRequest(String url)  {
         try {
+
             OkHttpClient client = getOkHttpClient();
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
+            Response response = client.newCall(requestBuilder.url(url).build()).execute();
 
-            Response response = client.newCall(request).execute();
-
-            if(type.equals(String.class)) {
+            if (type.equals(String.class)) {
                 reponseObject = response.body().string();
             } else {
                 Gson gson = new GsonBuilder()

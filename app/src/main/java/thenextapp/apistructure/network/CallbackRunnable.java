@@ -3,6 +3,7 @@ package thenextapp.apistructure.network;
 import java.util.concurrent.Executor;
 
 abstract class CallbackRunnable<T> implements Runnable {
+
     private final Callback<T> callback;
     private final Executor callbackExecutor;
 
@@ -19,8 +20,7 @@ abstract class CallbackRunnable<T> implements Runnable {
             callbackExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    callback.success(
-                            (T) wrapper.responseBody, wrapper.response);
+                    callback.success((T) wrapper.responseBody, wrapper.response);
                 }
             });
         } catch (final Exception e) {

@@ -80,8 +80,7 @@ public class RestAdapter {
 
             thenextapp.apistructure.network.Callback<?> callback = (thenextapp.apistructure.network.Callback<?>) objects[objects.length - 1];
 
-            httpExecutor.execute(new CallbackRunnable(callback,
-                    callbackExecutor) {
+            httpExecutor.execute(new CallbackRunnable(callback, callbackExecutor) {
                 @Override
                 public ResponseWrapper obtainResponse() {
                     return (ResponseWrapper) invokeRequest(getRootUrl());
@@ -103,17 +102,20 @@ public class RestAdapter {
         try {
             OkHttpClient client = getOkHttpClient();
             Request request = new Request.Builder()
-                    .url(getRootUrl())
+                    .url(url)
                     .build();
 
             Response response = client.newCall(request).execute();
 
-            Gson gson = new GsonBuilder()
-                    .excludeFieldsWithModifiers(Modifier.FINAL, Modifier.TRANSIENT, Modifier.STATIC)
-                    .serializeNulls()
-                    .create();
-
-            reponseObject = gson.fromJson(response.body().string(), type);
+            if(type.equals(String.class)) {
+                reponseObject = response.body().string();
+            } else {
+                Gson gson = new GsonBuilder()
+                        .excludeFieldsWithModifiers(Modifier.FINAL, Modifier.TRANSIENT, Modifier.STATIC)
+                        .serializeNulls()
+                        .create();
+                reponseObject = gson.fromJson(response.body().string(), type);
+            }
 
             return new ResponseWrapper(response, reponseObject);
 

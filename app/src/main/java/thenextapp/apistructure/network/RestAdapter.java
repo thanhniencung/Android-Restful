@@ -11,6 +11,7 @@ import com.squareup.okhttp.*;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 
@@ -26,7 +27,7 @@ public class RestAdapter {
     private  Executor callbackExecutor = null;
 
     private String apiUrl = "";
-    private Type type;
+    private Class<?> clazz;
     private Object reponseObject;
     private Request.Builder requestBuilder;
 
@@ -80,9 +81,10 @@ public class RestAdapter {
         @Override
         public Object invoke(Object o, final Method method, Object[] objects) throws Throwable {
 
-            type = method.getGenericReturnType();
+            Type[] types = method.getGenericParameterTypes();
+            ParameterizedType pType = (ParameterizedType) types[0];
 
-            method.getParameterAnnotations();
+            clazz = (Class<?>) pType.getActualTypeArguments()[0];
 
             Callback<?> callback = (Callback<?>) objects[objects.length - 1];
 
@@ -114,14 +116,14 @@ public class RestAdapter {
             OkHttpClient client = getOkHttpClient();
             Response response = client.newCall(requestBuilder.url(url).build()).execute();
 
-            if (type.equals(String.class)) {
+            if (clazz.equals(String.class)) {
                 reponseObject = response.body().string();
             } else {
                 Gson gson = new GsonBuilder()
                         .excludeFieldsWithModifiers(Modifier.FINAL, Modifier.TRANSIENT, Modifier.STATIC)
                         .serializeNulls()
                         .create();
-                reponseObject = gson.fromJson(response.body().string(), type);
+                reponseObject = gson.fromJson(response.body().string(), clazz);
             }
 
             return new ResponseWrapper(response, reponseObject);

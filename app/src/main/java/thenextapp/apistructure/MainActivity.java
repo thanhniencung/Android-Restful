@@ -53,14 +53,15 @@ public class MainActivity extends AppCompatActivity {
         service.getUserInfo(new Callback<User>() {
             @Override
             public void success(User user, Response response) {
-                User u =  user;
-                Picasso.with(MainActivity.this).load(u.avatar_url).into(ivAvatar);
-                tvName.setText(u.name);
+                if (user != null) {
+                    Picasso.with(MainActivity.this).load(user.avatar_url).into(ivAvatar);
+                    tvName.setText(user.name);
+                }
             }
 
             @Override
             public void failure(Exception error) {
-
+                error.printStackTrace();
             }
         });
 
